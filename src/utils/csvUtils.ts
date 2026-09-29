@@ -56,6 +56,8 @@ export function convertOrdersToCSV(
     getHeader('csvHeaderRecipientStreet'),
     getHeader('csvHeaderRecipientCityPostal'),
     getHeader('csvHeaderRecipientCountry'),
+    getHeader('csvHeaderChargedAmount'),
+    getHeader('csvHeaderGiftCardAmount'),
   ];
 
   const rows: string[] = [headers.join(',')];
@@ -84,6 +86,8 @@ export function convertOrdersToCSV(
           escapeCSVValue(order.recipientStreet),
           escapeCSVValue(order.recipientCityPostal),
           escapeCSVValue(order.recipientCountry),
+          order.chargedAmount ?? '',
+          order.giftCardAmount,
         ].join(',')
       );
     } else {
@@ -108,6 +112,8 @@ export function convertOrdersToCSV(
             index === 0 ? escapeCSVValue(order.recipientStreet) : '',
             index === 0 ? escapeCSVValue(order.recipientCityPostal) : '',
             index === 0 ? escapeCSVValue(order.recipientCountry) : '',
+            index === 0 ? (order.chargedAmount ?? '') : '',
+            index === 0 ? order.giftCardAmount : '',
           ].join(',')
         );
       });

@@ -77,6 +77,7 @@ The extension interface is available in these languages:
 | German   | `de`   |
 | Spanish  | `es`   |
 | French   | `fr`   |
+| Italian  | `it`   |
 | Swedish  | `sv`   |
 
 ---
@@ -161,7 +162,9 @@ The data model for each order includes the following fields:
     "recipientName": "string (shipping recipient's name)",
     "recipientStreet": "string (street lines joined by commas; may be empty)",
     "recipientCityPostal": "string (city and postal code line; may be empty)",
-    "recipientCountry": "string (may be empty)"
+    "recipientCountry": "string (may be empty)",
+    "chargedAmount": "number | null (amount charged to the payment method; null until order details are fetched)",
+    "giftCardAmount": "number (amount covered by a gift card, 0 if none was used)"
 }
 ```
 
@@ -189,6 +192,8 @@ The CSV export creates multiple rows for orders with multiple items. Columns:
 | Recipient Street | Shipping street address, multi-line joined by commas (on the first item row only) |
 | Recipient City / Postal | Shipping city and postal code line (on the first item row only) |
 | Recipient Country | Shipping country (on the first item row only) |
+| Charged Amount | Amount charged to the payment method after any gift-card deduction (on the first item row only) |
+| Gift Card Amount | Amount covered by a gift card, 0 if none was used (on the first item row only) |
 
 ---
 
