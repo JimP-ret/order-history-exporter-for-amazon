@@ -16,6 +16,8 @@ Browser extension for exporting your Amazon order history to JSON or CSV format.
 - [Order History Exporter for Amazon](#order-history-exporter-for-amazon)
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
+  - [Supported Marketplaces](#supported-marketplaces)
+  - [Available Translations](#available-translations)
   - [Installation](#installation)
     - [From Browser Stores](#from-browser-stores)
     - [From Source](#from-source)
@@ -37,8 +39,46 @@ Browser extension for exporting your Amazon order history to JSON or CSV format.
 - **Full History Export** — Export your entire Amazon order history
 - **Date Range Filtering** — Export orders within a specific date range
 - **Multiple Formats** — Export as JSON or CSV
+- **Cancellable Exports** — Stop an export while it is in progress
 - **Privacy Focused** — No tracking or data collection; all processing happens locally
 - **Open Source** — Free to use and modify
+
+---
+
+## Supported Marketplaces
+
+| Market         | Domain          | Default Currency |
+| -------------- | --------------- | ---------------- |
+| United States  | `amazon.com`    | USD              |
+| United Kingdom | `amazon.co.uk`  | GBP              |
+| Sweden         | `amazon.se`     | SEK              |
+| Germany        | `amazon.de`     | EUR              |
+| France         | `amazon.fr`     | EUR              |
+| Italy          | `amazon.it`     | EUR              |
+| Spain          | `amazon.es`     | EUR              |
+| Canada         | `amazon.ca`     | CAD              |
+| Japan          | `amazon.co.jp`  | JPY              |
+| India          | `amazon.in`     | INR              |
+| Australia      | `amazon.com.au` | AUD              |
+| Brazil         | `amazon.com.br` | BRL              |
+| Mexico         | `amazon.com.mx` | MXN              |
+| Belgium        | `amazon.com.be` | EUR              |
+| United Arab Emirates | `amazon.ae` | AED              |
+
+---
+
+## Available Translations
+
+The extension interface is available in these languages:
+
+| Language | Locale |
+| -------- | ------ |
+| English  | `en`   |
+| German   | `de`   |
+| Spanish  | `es`   |
+| French   | `fr`   |
+| Italian  | `it`   |
+| Swedish  | `sv`   |
 
 ---
 
@@ -84,6 +124,7 @@ The built extensions will be in browser-specific directories:
 3. Click the extension icon in the toolbar
 4. Select your export options (date range, format)
 5. Click "Export" to download your order history
+6. To cancel an export in progress, reopen the popup and click "Stop Export"
 
 ---
 
@@ -121,7 +162,9 @@ The data model for each order includes the following fields:
     "recipientName": "string (shipping recipient's name)",
     "recipientStreet": "string (street lines joined by commas; may be empty)",
     "recipientCityPostal": "string (city and postal code line; may be empty)",
-    "recipientCountry": "string (may be empty)"
+    "recipientCountry": "string (may be empty)",
+    "chargedAmount": "number | null (amount charged to the payment method; null until order details are fetched)",
+    "giftCardAmount": "number (amount covered by a gift card, 0 if none was used)"
 }
 ```
 
@@ -149,6 +192,8 @@ The CSV export creates multiple rows for orders with multiple items. Columns:
 | Recipient Street | Shipping street address, multi-line joined by commas (on the first item row only) |
 | Recipient City / Postal | Shipping city and postal code line (on the first item row only) |
 | Recipient Country | Shipping country (on the first item row only) |
+| Charged Amount | Amount charged to the payment method after any gift-card deduction (on the first item row only) |
+| Gift Card Amount | Amount covered by a gift card, 0 if none was used (on the first item row only) |
 
 ---
 
@@ -199,19 +244,6 @@ Tagged releases (`v*.*.*`) run `.github/workflows/release.yml` and now:
 - creates a GitHub Release with downloadable files
 - publishes to Chrome Web Store (stable tags only)
 - submits to Firefox Add-ons (listed channel, stable tags only)
-
-Configure these repository settings before tagging a release:
-
-Repository Variables:
-- `CHROME_EXTENSION_ID` (example: `fipfbjgikgcggcebnefmamgemoehfgof`)
-- `CHROME_PUBLISHER_ID` (Chrome Web Store publisher account ID)
-
-Repository Secrets:
-- `CHROME_CLIENT_ID`
-- `CHROME_CLIENT_SECRET`
-- `CHROME_REFRESH_TOKEN`
-- `FIREFOX_API_KEY`
-- `FIREFOX_API_SECRET`
 
 Prerelease tags (for example `v1.2.3-beta.1`) still create a GitHub Release, but skip Chrome/Firefox store publishing.
 

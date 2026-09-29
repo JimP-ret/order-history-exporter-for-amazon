@@ -51,6 +51,15 @@ describe('formatPromotionsForCSV', () => {
     ];
     expect(formatPromotionsForCSV(promotions)).toBe('Coupon: €5; Prime: €3.5');
   });
+  it('should format AED promotions with the order currency', () => {
+    const promotions = [{ description: 'Coupon', amount: 5.0 }];
+    expect(formatPromotionsForCSV(promotions, 'AED')).toBe('Coupon: AED 5');
+  });
+
+  it('should default promotion formatting to EUR', () => {
+    const promotions = [{ description: 'Coupon', amount: 5.0 }];
+    expect(formatPromotionsForCSV(promotions)).toBe('Coupon: €5');
+  });
 
   it('should return empty string for no promotions', () => {
     expect(formatPromotionsForCSV([])).toBe('');
@@ -72,7 +81,19 @@ describe('convertOrdersToCSV', () => {
     recipientStreet: '',
     recipientCityPostal: '',
     recipientCountry: '',
+    chargedAmount: null,
+    giftCardAmount: 0,
     ...overrides,
+  });
+  it('should format promotions using the order currency', () => {
+    const orders = [
+      createOrder({
+        currency: 'AED',
+        promotions: [{ description: 'Coupon', amount: 5.0 }],
+      }),
+    ];
+    const csv = convertOrdersToCSV(orders);
+    expect(csv).toContain('Coupon: AED 5');
   });
 
   it('should create CSV with headers', () => {
@@ -242,5 +263,57 @@ describe('convertOrdersToCSV', () => {
     // Assert this directly instead of splitting on ',', which is not CSV-safe
     // when earlier columns may contain commas inside quoted fields.
     expect(lines[2]).toMatch(/,{4}$/);
+  });
+
+  it('should include chargedAmount and giftCardAmount in headers', () => {
+    const csv = convertOrdersToCSV([]);
+    expect(csv).toContain('csvHeaderChargedAmount');
+    expect(csv).toContain('csvHeaderGiftCardAmount');
+  });
+
+  it('should include chargedAmount and giftCardAmount values for an order without items', () => {
+    const orders = [createOrder({ chargedAmount: 0, giftCardAmount: 40 })];
+    const csv = convertOrdersToCSV(orders);
+    const lines = csv.split('\n');
+    expect(lines[1]).toMatch(/,0,40$/);
+  });
+
+  it('should write an empty chargedAmount when it is null (order details not fetched)', () => {
+    const orders = [createOrder({ chargedAmount: null, giftCardAmount: 0 })];
+    const csv = convertOrdersToCSV(orders);
+    const lines = csv.split('\n');
+    expect(lines[1]).toMatch(/,0$/);
+  });
+
+  it('should only include chargedAmount and giftCardAmount on the first item row of a multi-item order', () => {
+    const orders = [
+      createOrder({
+        chargedAmount: 25,
+        giftCardAmount: 15,
+        items: [
+          {
+            title: 'Product 1',
+            asin: 'B000000001',
+            quantity: 1,
+            price: 29.99,
+            discount: 0,
+            itemUrl: 'https://amazon.de/dp/B000000001',
+          },
+          {
+            title: 'Product 2',
+            asin: 'B000000002',
+            quantity: 1,
+            price: 15.0,
+            discount: 0,
+            itemUrl: 'https://amazon.de/dp/B000000002',
+          },
+        ],
+      }),
+    ];
+    const csv = convertOrdersToCSV(orders);
+    const lines = csv.split('\n');
+
+    expect(lines[1]).toMatch(/,25,15$/);
+    expect(lines[2]).toMatch(/,{2}$/);
   });
 });

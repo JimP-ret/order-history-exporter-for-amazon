@@ -21,9 +21,11 @@ export function escapeCSVValue(value: string | number | undefined): string {
  * Format promotions as a string for CSV
  */
 export function formatPromotionsForCSV(
-  promotions: { description: string; amount: number }[]
+  promotions: { description: string; amount: number }[],
+  currency: string = 'EUR'
 ): string {
-  return promotions.map((p) => `${p.description}: €${p.amount}`).join('; ');
+  const currencyPrefix = currency === 'EUR' ? '€' : `${currency} `;
+  return promotions.map((p) => `${p.description}: ${currencyPrefix}${p.amount}`).join('; ');
 }
 
 /**
@@ -54,12 +56,14 @@ export function convertOrdersToCSV(
     getHeader('csvHeaderRecipientStreet'),
     getHeader('csvHeaderRecipientCityPostal'),
     getHeader('csvHeaderRecipientCountry'),
+    getHeader('csvHeaderChargedAmount'),
+    getHeader('csvHeaderGiftCardAmount'),
   ];
 
   const rows: string[] = [headers.join(',')];
 
   orders.forEach((order) => {
-    const promotionsStr = formatPromotionsForCSV(order.promotions);
+    const promotionsStr = formatPromotionsForCSV(order.promotions, order.currency);
 
     if (order.items.length === 0) {
       rows.push(
@@ -82,6 +86,8 @@ export function convertOrdersToCSV(
           escapeCSVValue(order.recipientStreet),
           escapeCSVValue(order.recipientCityPostal),
           escapeCSVValue(order.recipientCountry),
+          order.chargedAmount ?? '',
+          order.giftCardAmount,
         ].join(',')
       );
     } else {
@@ -106,6 +112,8 @@ export function convertOrdersToCSV(
             index === 0 ? escapeCSVValue(order.recipientStreet) : '',
             index === 0 ? escapeCSVValue(order.recipientCityPostal) : '',
             index === 0 ? escapeCSVValue(order.recipientCountry) : '',
+            index === 0 ? (order.chargedAmount ?? '') : '',
+            index === 0 ? order.giftCardAmount : '',
           ].join(',')
         );
       });
